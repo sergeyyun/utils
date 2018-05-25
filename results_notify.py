@@ -36,8 +36,9 @@ if __name__ == '__main__':
                 user_email = data.get('user_email'),
 
                 #construct the email subject and body
+                link = "https://syun0.ucmpcs.org:4433/annotations/" + job_id
                 subject = "GAS notification: job complete"
-                body = "Annotation job " + job_id + "is complete" #include link!!!
+                body = "Annotation job " + job_id + " is complete" + "\n" + "To view annotation job, click on the following link: " + link
 
                 #send the email
                 send_email_ses (recipients=user_email, sender=MAIL_DEFAULT_SENDER, subject=subject, body=body)

@@ -182,3 +182,18 @@ ls
 rmate results_notify.py
 python results_notify.py
 rmate results_notify.py
+workon mpcs
+ls
+git init
+git remote add origin https://github.com/sergeyyun/utils.git
+git add .
+git remove .
+git rm .
+git rm -r *
+ls
+git commit -m "first commit"
+git push origin master
+ls
+python results_notify.py
+rmate results_notify.py
+python results_notify.py
