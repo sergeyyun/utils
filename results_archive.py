@@ -10,7 +10,7 @@ import time
 
 AWS_S3_RESULTS_BUCKET = "gas-results"
 AWS_SNS_JOB_ARCHIVE_QUEUE = 'syun0_archive_jobs'
-GLACIER_ARCHIVE_DELAY_IN_SECONDS = 1800 #CHANGE THIS TO 1800 AFTER TESTING
+GLACIER_ARCHIVE_DELAY_IN_SECONDS = 10
 AWS_GLACIER_VAULT = "ucmpcs"
 AWS_S3_RESULTS_BUCKET = "gas-results"
 AWS_REGION_NAME = os.environ['AWS_REGION_NAME'] if ('AWS_REGION_NAME' in  os.environ) else "us-east-1"
@@ -36,7 +36,7 @@ if __name__ == '__main__':
     queue = sqs.get_queue_by_name(QueueName=AWS_SNS_JOB_ARCHIVE_QUEUE)
 
     while True:
-        messages = queue.receive_messages(WaitTimeSeconds=60)
+        messages = queue.receive_messages(WaitTimeSeconds=20)
         if(messages):
             for message in messages:
                 #read message body
@@ -48,7 +48,6 @@ if __name__ == '__main__':
 
                 current_time = int(time.time())
                 time_elapsed = current_time - completion_time
-                print(time_elapsed)
                 if time_elapsed > GLACIER_ARCHIVE_DELAY_IN_SECONDS:
                     #archive file and get archived id
                     results_file_archive_id = archive_job(result_file_key=result_file_key)
@@ -69,11 +68,14 @@ if __name__ == '__main__':
 
                     ann_table.update_item(
                         Key = {'job_id': job_id},
-                        UpdateExpression='SET results_file_archive_id = :val1',
+                        UpdateExpression='SET results_file_archive_id = :val1, archived = :val2',
                         ExpressionAttributeValues={
-                            ':val1': results_file_archive_id
+                            ':val1': results_file_archive_id,
+                            ':val2': True
                         }
                     )
+
+                    print("job " + job_id + " archived to Glacier")
 
                     #delete the message
                     message.delete()

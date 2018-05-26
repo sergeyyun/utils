@@ -197,3 +197,21 @@ ls
 python results_notify.py
 rmate results_notify.py
 python results_notify.py
+ls
+workon mpcs
+python results_notify.py
+echo "" > results_archive.py
+rmate results_archive.pt
+rmate results_archive.py
+ls
+rmate results_notify.py
+python results_notify.py
+python results_archive.py
+ls
+python results_archive.py
+git status
+git add .
+git commit -m '7 done'
+git push origin master
+workon mpcs
+rmate results_archive.py
