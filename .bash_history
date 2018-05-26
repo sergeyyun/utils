@@ -215,3 +215,13 @@ git commit -m '7 done'
 git push origin master
 workon mpcs
 rmate results_archive.py
+workon mpcs
+ls
+python results_archive.py
+rmate results_archive.py
+python results_archive.py
+rmate results_archive.py
+python results_archive.py
+git add .
+git commit -m '8 done'
+git push origin master
