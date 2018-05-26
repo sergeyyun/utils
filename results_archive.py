@@ -10,7 +10,7 @@ import time
 
 AWS_S3_RESULTS_BUCKET = "gas-results"
 AWS_SNS_JOB_ARCHIVE_QUEUE = 'syun0_archive_jobs'
-GLACIER_ARCHIVE_DELAY_IN_SECONDS = 1800
+GLACIER_ARCHIVE_DELAY_IN_SECONDS = 60
 AWS_GLACIER_VAULT = "ucmpcs"
 AWS_S3_RESULTS_BUCKET = "gas-results"
 AWS_REGION_NAME = os.environ['AWS_REGION_NAME'] if ('AWS_REGION_NAME' in  os.environ) else "us-east-1"
@@ -62,7 +62,7 @@ if __name__ == '__main__':
 
                     #record archived ID in dynamodb
                     try:
-                        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+                        dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION_NAME)
                         ann_table = dynamodb.Table(AWS_DYNAMODB_ANNOTATIONS_TABLE)
                     except Exception:
                         print("Failed to retrieve connect to database")
