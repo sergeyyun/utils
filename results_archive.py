@@ -7,33 +7,28 @@ import boto3
 import os
 import json
 import time
+from configparser import ConfigParser
 
-AWS_S3_RESULTS_BUCKET = "gas-results"
-AWS_SNS_JOB_ARCHIVE_QUEUE = 'syun0_archive_jobs'
-GLACIER_ARCHIVE_DELAY_IN_SECONDS = 1800
-AWS_GLACIER_VAULT = "ucmpcs"
-AWS_S3_RESULTS_BUCKET = "gas-results"
-AWS_REGION_NAME = os.environ['AWS_REGION_NAME'] if ('AWS_REGION_NAME' in  os.environ) else "us-east-1"
-AWS_DYNAMODB_ANNOTATIONS_TABLE = "syun0_annotations"
-
+parser = ConfigParser()
+parser.read('config.ini')
 
 def archive_job(result_file_key=None):
     #find job in the dynamodb by job id
     #https://stackoverflow.com/questions/41833565/s3-buckets-to-glacier-on-demand-is-it-possible-from-boto3-api
-    glacier_client = boto3.client('glacier', region_name=AWS_REGION_NAME)
+    glacier_client = boto3.client('glacier', region_name=parser.get('configuration_variables', 'AWS_REGION_NAME'))
     s3 = boto3.resource('s3')
 
-    bucket = s3.Bucket(AWS_S3_RESULTS_BUCKET)
+    bucket = s3.Bucket(parser.get('configuration_variables', 'AWS_S3_RESULTS_BUCKET'))
 
     for obj in bucket.objects.filter(Prefix=result_file_key):
-        response = glacier_client.upload_archive(vaultName=AWS_GLACIER_VAULT,body=obj.get()['Body'].read())
+        response = glacier_client.upload_archive(vaultName=parser.get('configuration_variables', 'AWS_GLACIER_VAULT'),body=obj.get()['Body'].read())
         results_file_archive_id = response.get('archiveId')
         return results_file_archive_id
 
 if __name__ == '__main__':
     #connect to SQS and get the message queue
-    sqs = boto3.resource('sqs', region_name=AWS_REGION_NAME)
-    queue = sqs.get_queue_by_name(QueueName=AWS_SNS_JOB_ARCHIVE_QUEUE)
+    sqs = boto3.resource('sqs', region_name=parser.get('configuration_variables', 'AWS_REGION_NAME'))
+    queue = sqs.get_queue_by_name(QueueName=parser.get('configuration_variables', 'AWS_SNS_JOB_ARCHIVE_QUEUE'))
 
     while True:
         messages = queue.receive_messages(WaitTimeSeconds=20)
@@ -49,10 +44,10 @@ if __name__ == '__main__':
                 current_time = int(time.time())
                 time_elapsed = current_time - completion_time
                 print("elapsed time for job " + job_id + ": " + str(time_elapsed) + " seconds")
-                if time_elapsed > GLACIER_ARCHIVE_DELAY_IN_SECONDS:
+                if time_elapsed > parser.getint('configuration_variables', 'GLACIER_ARCHIVE_DELAY_IN_SECONDS'):
                     #check if user is still free (not upgraded during wait time)
-                    dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION_NAME)
-                    ann_table = dynamodb.Table(AWS_DYNAMODB_ANNOTATIONS_TABLE)
+                    dynamodb = boto3.resource('dynamodb', region_name=parser.get('configuration_variables', 'AWS_REGION_NAME'))
+                    ann_table = dynamodb.Table(parser.get('configuration_variables', 'AWS_DYNAMODB_ANNOTATIONS_TABLE'))
                     try:
                         response = ann_table.get_item(Key={'job_id': job_id})
                     except Exception:
@@ -70,13 +65,13 @@ if __name__ == '__main__':
                         #delete original file from S3
                         s3 = boto3.client('s3')
                         s3.delete_object(
-                            Bucket=AWS_S3_RESULTS_BUCKET,
+                            Bucket=parser.get('configuration_variables', 'AWS_S3_RESULTS_BUCKET'),
                             Key=result_file_key,
                         )
 
                         #record archived ID in dynamodb
-                        dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION_NAME)
-                        ann_table = dynamodb.Table(AWS_DYNAMODB_ANNOTATIONS_TABLE)
+                        dynamodb = boto3.resource('dynamodb', region_name=parser.get('configuration_variables', 'AWS_REGION_NAME'))
+                        ann_table = dynamodb.Table(parser.get('configuration_variables', 'AWS_DYNAMODB_ANNOTATIONS_TABLE'))
                         try:
                             ann_table.update_item(
                                 Key = {'job_id': job_id},

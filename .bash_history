@@ -260,3 +260,26 @@ python results_notify.py
 python archive_restore.py
 workon mpcs
 python archive_restore.py
+git add .
+git commit -m 'error checks, refactoring'
+git push origin master
+python results_archive.py
+workon mpcs
+python results_archive.py
+workon mpcs
+python archive_restore.py
+rmate archive_restore.py
+echo "" > config.py
+rmate config.py
+python archive_restore.py
+rmate results_archive.py
+ls
+rmate results_notify.py
+python archive_restore.py
+rmate archive_restore.py
+rmate config.py
+rm -rf config.py
+ls
+echo "" > config.ini
+rmate config.ini
+python archive_restore.py
