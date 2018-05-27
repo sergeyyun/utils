@@ -225,3 +225,38 @@ python results_archive.py
 git add .
 git commit -m '8 done'
 git push origin master
+python results_archive.py
+workon mpcs
+python results_archive.py
+rmate results_archive.py
+python results_archive.py
+ls
+echo "" > archive_restore.py
+rmate archive_restore.py
+rmate results_archive.py
+python results_archive.py
+ls
+python archive_restore.py
+python archive_restore.py [A
+python archive_restore.py
+python results_archive.py
+rmate results_archive.py
+python results_archive.py
+rmate results_archive.py
+rmate archive_restore.py
+python results_archive.py
+workon mpcs
+ls
+python results_notify.py
+git add .
+git commit -m 'bug fixing'
+python results_notify.py
+ls
+git status
+git add .
+git commit -m '1-9 done'
+git push origin master
+python results_notify.py
+python archive_restore.py
+workon mpcs
+python archive_restore.py
